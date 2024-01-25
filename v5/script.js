@@ -1,5 +1,6 @@
-// PART 4
+// PART 5
 let totalExpense = 0;
+
 
 // get total element reference
 const totalElement = document.querySelector("#totalExpense");
@@ -17,27 +18,65 @@ const allExpenses = [];
 function counterIncrement(){
   const expenseItems = {};
 
-  const amountUsed = Number(amountUsedElement.value);
-  const amountDesc = totalDescElement.value;
+  let amountUsed = Number(amountUsedElement.value);
+  let amountDesc = totalDescElement.value;
   totalExpense = totalExpense + amountUsed;
   totalElement.textContent = `Total: ${totalExpense}`;
   
   expenseItems.desc = amountDesc;
   expenseItems.amount = amountUsed;
+  expenseItems.moment = new Date();
 
   allExpenses.push(expenseItems);
-  const allExpensesHTML = allExpenses.map(expense => {
-    return `<div> ${expense.desc} :: ${expense.amount} </div>`
-  });
-  const joinAllExpensesHTML = allExpensesHTML.join("");
-  console.log(joinAllExpensesHTML);
-
-  tableExpenseElement.innerHTML = joinAllExpensesHTML;
-  
+  renderList(allExpenses);
+  document.getElementById("number").value = "";
+  document.getElementById("desc").value = "";
 }  
 
 // get the button refferal
-const plusButton = document.querySelector("#addButton");
+const plusButton = document.querySelector("#button-addon2");
 
 // listen to Click Events
 plusButton.addEventListener("click", counterIncrement, false);
+
+function createListItemsHTML({ desc, amount, moment }){
+  return `
+    <li class="list-group-item d-flex justify-content-between">
+      <div class="d-flex flex-column">
+        ${desc}
+        <small class="text-muted">${getDateString(moment)}</small>
+      </div>
+      <div>
+        <span class="px-5">
+        ${amount}
+        </span>
+        <button type="button" class="btn btn-outline-danger btn-sm" onclick=deleteItem(${moment.valueOf()})>
+          <i class="fas fa-trash-alt"></i>
+        </button>
+      </div>
+    </li>
+  `;
+}
+
+function getDateString(moment){
+  return moment.toLocaleDateString('en-US', {year: 'numeric', month: 'long', day: 'numeric'});
+}
+
+function deleteItem(dateValue){
+  console.log("delete item is called", dateValue);
+
+  for (let i=0; i<allExpenses.length; i++){
+    if(allExpenses[i].moment.valueOf() === dateValue){
+      totalExpense = totalExpense - allExpenses[i].amount;
+      allExpenses.splice(i, 1);
+      totalElement.textContent = `Total : ${totalExpense}`;
+    }
+  }
+  renderList(allExpenses);
+}
+
+function renderList(arrayOfList){
+  const allExpensesHTML = arrayOfList.map(expense => createListItemsHTML(expense));
+  const joinAllExpensesHTML = allExpensesHTML.join("");
+  tableExpenseElement.innerHTML = joinAllExpensesHTML;
+}
